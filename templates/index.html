@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Diary</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20250920c') }}">
 </head>
 <body>
     <div class="container">
@@ -36,6 +36,12 @@
         </main>
     </div>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <!-- Annoying overlay to show when banned words detected -->
+    <div id="annoyingOverlay" class="annoying-overlay" aria-hidden="true">
+        <img src="{{ url_for('static', filename='img/pengganggu.jpg') }}" alt="Pengganggu">
+        <div id="bannedMessage" class="banned-message" aria-live="assertive"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js', v='20250920c') }}"></script>
 </body>
 </html>

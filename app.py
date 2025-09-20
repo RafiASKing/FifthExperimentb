@@ -7,6 +7,7 @@ A simple, elegant digital diary with auto-save functionality.
 from flask import Flask, render_template, request, jsonify
 from pathlib import Path
 from datetime import datetime
+import json
 
 app = Flask(__name__)
 
@@ -14,6 +15,28 @@ app = Flask(__name__)
 # Use a diary_entries directory located next to app.py (absolute path)
 DIARY_DIR = Path(__file__).resolve().parent / "diary_entries"
 DIARY_DIR.mkdir(parents=True, exist_ok=True)
+
+# Config directory and banned words file
+CONFIG_DIR = Path(__file__).resolve().parent / "config"
+CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+BANNED_WORDS_FILE = CONFIG_DIR / "banned_words.json"
+
+def load_banned_words():
+    """Load banned words list from JSON config file.
+    Returns a list of strings. If file missing or invalid, returns [].
+    """
+    try:
+        if not BANNED_WORDS_FILE.exists():
+            # initialize with empty list so user can edit later
+            BANNED_WORDS_FILE.write_text("[]", encoding="utf-8")
+            return []
+        data = BANNED_WORDS_FILE.read_text(encoding="utf-8")
+        words = json.loads(data)
+        if isinstance(words, list):
+            return [str(w).strip() for w in words if str(w).strip()]
+        return []
+    except Exception:
+        return []
 
 def get_today_date():
     """Get today's date in YYYY-MM-DD format."""
@@ -95,6 +118,11 @@ def get_entry(date):
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/banned-words')
+def get_banned_words():
+    """Return banned words as JSON for the frontend."""
+    return jsonify({'banned_words': load_banned_words()})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

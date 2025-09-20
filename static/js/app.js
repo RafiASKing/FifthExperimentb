@@ -5,15 +5,21 @@ class DiaryApp {
         this.currentDate = '';
         this.saveTimeout = null;
         this.entries = [];
+        this.bannedWords = [];
+        this.overlayTimer = null;
         this.init();
     }
 
     async init() {
         this.setupElements();
         this.setupEventListeners();
+    await this.loadBannedWords();
         await this.loadTodaysEntry();
         await this.loadEntries();
         this.updateDateDisplay();
+        try { console.debug('DiaryApp initialized'); } catch {}
+        // Periodically refresh banned patterns (every 15s) so config edits apply without reload
+        this._bwInterval = setInterval(() => this.loadBannedWords(), 15000);
     }
 
     setupElements() {
@@ -21,12 +27,21 @@ class DiaryApp {
         this.saveStatus = document.getElementById('saveStatus');
         this.currentDateEl = document.getElementById('currentDate');
         this.entriesList = document.getElementById('entriesList');
+        this.overlayEl = document.getElementById('annoyingOverlay');
+        this.bannedMsgEl = document.getElementById('bannedMessage');
     }
 
     setupEventListeners() {
         // Auto-save on text change
         this.diaryText.addEventListener('input', () => {
             this.handleTextChange();
+            this.checkForBannedWords();
+        });
+
+        // Refresh banned patterns when window gains focus or tab becomes visible
+        window.addEventListener('focus', () => this.loadBannedWords());
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) this.loadBannedWords();
         });
 
         // Save on page unload
@@ -57,6 +72,7 @@ class DiaryApp {
             this.currentDate = data.date;
             this.diaryText.value = data.content;
             this.updateSaveStatus('ready');
+            this.checkForBannedWords();
         } catch (error) {
             console.error('Error loading today\'s entry:', error);
             this.updateSaveStatus('Error loading entry');
@@ -217,6 +233,69 @@ class DiaryApp {
         
         const statusText = this.saveStatus.querySelector('.status-text');
         statusText.textContent = status;
+    }
+
+    async loadBannedWords() {
+        try {
+            const res = await fetch('/api/banned-words');
+            const data = await res.json();
+            const rawList = Array.isArray(data.banned_words) ? data.banned_words : [];
+            this.bannedWords = rawList
+                .map(w => typeof w === 'string' ? w.toLowerCase().trim() : '')
+                .filter(Boolean);
+            try { console.debug('Loaded banned words:', this.bannedWords); } catch {}
+        } catch (e) {
+            console.warn('Failed to load banned words:', e);
+            this.bannedWords = [];
+        }
+    }
+
+    checkForBannedWords() {
+        if (!this.bannedWords || this.bannedWords.length === 0) return;
+        const rawText = this.diaryText.value || '';
+        const text = rawText.toLowerCase();
+        let matched = null;
+        for (const w of this.bannedWords) {
+            if (!w) continue;
+            const idx = text.indexOf(w);
+            if (idx !== -1) {
+                // preserve original casing by slicing original text
+                matched = rawText.substring(idx, idx + w.length);
+                break;
+            }
+        }
+        if (matched) {
+            try { console.debug('Banned word matched:', matched); } catch {}
+            this.showAnnoyingOverlay(matched);
+        }
+    }
+
+    showAnnoyingOverlay(matchedWord) {
+        if (!this.overlayEl) return;
+        if (this.overlayEl.classList.contains('show')) {
+            // restart timer
+            clearTimeout(this.overlayTimer);
+        } else {
+            this.overlayEl.classList.add('show');
+        }
+
+        if (this.bannedMsgEl) {
+            const word = (matchedWord || '').trim();
+            this.bannedMsgEl.textContent = word ? `${word} is tidak baik, hapus!` : `Kata ini tidak baik, hapus!`;
+        }
+
+        this.overlayTimer = setTimeout(() => {
+            this.hideAnnoyingOverlay();
+        }, 5000);
+    }
+
+    hideAnnoyingOverlay() {
+        if (!this.overlayEl) return;
+        this.overlayEl.classList.remove('show');
+        if (this.overlayTimer) {
+            clearTimeout(this.overlayTimer);
+            this.overlayTimer = null;
+        }
     }
 }
 

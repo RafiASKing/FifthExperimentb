@@ -192,6 +192,46 @@ main {
     padding: 20px;
 }
 
+/* Annoying overlay */
+.annoying-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+}
+
+.annoying-overlay.show {
+    display: flex;
+}
+
+.annoying-overlay img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+.banned-message {
+    position: absolute;
+    left: 50%;
+    bottom: 10%;
+    transform: translateX(-50%);
+    color: #ffdddd;
+    background: rgba(255, 0, 0, 0.25);
+    border: 3px solid rgba(255, 0, 0, 0.7);
+    padding: 18px 28px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 42px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 0 #000, 0 0 12px rgba(255,0,0,0.6);
+    box-shadow: 0 10px 30px rgba(255,0,0,0.25);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     main {
