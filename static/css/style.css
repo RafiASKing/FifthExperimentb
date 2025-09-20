@@ -1,0 +1,242 @@
+/* Digital Diary Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+header h1 {
+    color: #4a5568;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-weight: 300;
+}
+
+.date-display {
+    color: #667eea;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+main {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 30px;
+    flex: 1;
+}
+
+.diary-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.editor-container {
+    position: relative;
+    height: 100%;
+}
+
+#diaryText {
+    width: 100%;
+    height: 500px;
+    border: none;
+    resize: vertical;
+    font-family: 'Georgia', serif;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 20px;
+    background: #fafafa;
+    border-radius: 10px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#diaryText:focus {
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#diaryText::placeholder {
+    color: #a0aec0;
+    font-style: italic;
+}
+
+.save-status {
+    position: absolute;
+    bottom: -30px;
+    right: 0;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.save-status.saving {
+    background: #ffeaa7;
+    color: #d63031;
+}
+
+.save-status.saved {
+    background: #00b894;
+    color: white;
+}
+
+.save-status.ready {
+    background: #ddd6fe;
+    color: #667eea;
+}
+
+.sidebar {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    height: fit-content;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.sidebar h3 {
+    color: #4a5568;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.entry-item {
+    padding: 12px 15px;
+    background: #f7fafc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.entry-item:hover {
+    background: #edf2f7;
+    border-left-color: #667eea;
+    transform: translateX(5px);
+}
+
+.entry-item.active {
+    background: #667eea;
+    color: white;
+    border-left-color: #4c51bf;
+}
+
+.entry-date {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.entry-preview {
+    font-size: 12px;
+    color: #718096;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.entry-item.active .entry-preview {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.loading {
+    text-align: center;
+    color: #a0aec0;
+    font-style: italic;
+    padding: 20px;
+}
+
+.no-entries {
+    text-align: center;
+    color: #a0aec0;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    main {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .sidebar {
+        order: -1;
+        max-height: 200px;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+    
+    .diary-section, .sidebar {
+        padding: 20px;
+    }
+    
+    #diaryText {
+        height: 400px;
+        font-size: 14px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

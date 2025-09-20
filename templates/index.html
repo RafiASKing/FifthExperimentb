@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Diary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📔 Digital Diary</h1>
+            <div class="date-display" id="currentDate"></div>
+        </header>
+
+        <main>
+            <div class="diary-section">
+                <div class="editor-container">
+                    <textarea 
+                        id="diaryText" 
+                        placeholder="How was your day? Write your thoughts here..."
+                        autofocus
+                    ></textarea>
+                    <div class="save-status" id="saveStatus">
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <h3>Past Entries</h3>
+                <div class="entries-list" id="entriesList">
+                    <div class="loading">Loading entries...</div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
