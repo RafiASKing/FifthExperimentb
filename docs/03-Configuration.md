@@ -40,7 +40,7 @@ This approach lets you keep production rules private—even in the browser’s n
 
 1. Copy the template file and make it yours:
    ```powershell
-   Copy-Item .\config\banned_words_template.json .\config\banned_patterns.json -Force
+   Copy-Item .\config\banned_patterns_template.json .\config\banned_patterns.json -Force
    ```
 2. Open the new `banned_patterns.json` and add/update patterns.
 3. Optionally add the file to `.gitignore` if you don’t want to commit sensitive rules.

@@ -53,7 +53,7 @@ Visit `http://127.0.0.1:5000` in your browser. Debug mode is enabled by default,
 app.py
 config/
   banned_patterns.json          # local regex rules (add to .gitignore if needed)
-  banned_words_template.json    # example starter patterns
+  banned_patterns_template.json    # example starter patterns
 diary_entries/                  # generated text files per day
 docs/                           # project documentation (this folder)
 static/

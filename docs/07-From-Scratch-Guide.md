@@ -46,7 +46,7 @@ Rebuilding Digital Diary is an excellent exercise for learners who want to mix P
 
 ## 5. Configuration Files
 
-- Track a template at `config/banned_words_template.json` offering starter patterns.
+- Track a template at `config/banned_patterns_template.json` offering starter patterns.
 - Encourage users to copy it to `config/banned_patterns.json` and customize.
 - Consider adding `config/banned_patterns.json` to `.gitignore` so deployments can keep private rules.
 
