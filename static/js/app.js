@@ -5,21 +5,20 @@ class DiaryApp {
         this.currentDate = '';
         this.saveTimeout = null;
         this.entries = [];
-        this.bannedWords = [];
         this.overlayTimer = null;
+        this._bannedCheckTimer = null;
+        this._bannedCheckAbort = null;
+        this._lastCheckedText = null;
         this.init();
     }
 
     async init() {
         this.setupElements();
         this.setupEventListeners();
-    await this.loadBannedWords();
         await this.loadTodaysEntry();
         await this.loadEntries();
         this.updateDateDisplay();
         try { console.debug('DiaryApp initialized'); } catch {}
-        // Periodically refresh banned patterns (every 15s) so config edits apply without reload
-        this._bwInterval = setInterval(() => this.loadBannedWords(), 15000);
     }
 
     setupElements() {
@@ -36,12 +35,6 @@ class DiaryApp {
         this.diaryText.addEventListener('input', () => {
             this.handleTextChange();
             this.checkForBannedWords();
-        });
-
-        // Refresh banned patterns when window gains focus or tab becomes visible
-        window.addEventListener('focus', () => this.loadBannedWords());
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) this.loadBannedWords();
         });
 
         // Save on page unload
@@ -72,7 +65,8 @@ class DiaryApp {
             this.currentDate = data.date;
             this.diaryText.value = data.content;
             this.updateSaveStatus('ready');
-            this.checkForBannedWords();
+            this._lastCheckedText = null;
+            this.checkForBannedWords(true);
         } catch (error) {
             console.error('Error loading today\'s entry:', error);
             this.updateSaveStatus('Error loading entry');
@@ -160,6 +154,8 @@ class DiaryApp {
                 this.diaryText.value = data.content;
                 this.updateSaveStatus('ready');
                 this.renderEntriesList(); // Re-render to update active state
+                this._lastCheckedText = null;
+                this.checkForBannedWords(true);
                 
                 // Update date display if not today
                 const today = new Date().toISOString().split('T')[0];
@@ -188,6 +184,8 @@ class DiaryApp {
         this.saveTimeout = setTimeout(() => {
             this.saveEntry();
         }, 1000);
+
+        this.scheduleBannedCheck();
     }
 
     async saveEntry() {
@@ -235,38 +233,78 @@ class DiaryApp {
         statusText.textContent = status;
     }
 
-    async loadBannedWords() {
-        try {
-            const res = await fetch('/api/banned-words');
-            const data = await res.json();
-            const rawList = Array.isArray(data.banned_words) ? data.banned_words : [];
-            this.bannedWords = rawList
-                .map(w => typeof w === 'string' ? w.toLowerCase().trim() : '')
-                .filter(Boolean);
-            try { console.debug('Loaded banned words:', this.bannedWords); } catch {}
-        } catch (e) {
-            console.warn('Failed to load banned words:', e);
-            this.bannedWords = [];
+    scheduleBannedCheck(force = false) {
+        if (!this.diaryText) return;
+
+        const text = this.diaryText.value || '';
+        if (!force && text === this._lastCheckedText) {
+            return;
         }
+
+        this._lastCheckedText = text;
+
+        if (this._bannedCheckTimer) {
+            clearTimeout(this._bannedCheckTimer);
+        }
+
+        if (this._bannedCheckAbort) {
+            this._bannedCheckAbort.abort();
+        }
+
+        this._bannedCheckTimer = setTimeout(() => {
+            this.checkForBannedWords();
+        }, force ? 0 : 500);
     }
 
-    checkForBannedWords() {
-        if (!this.bannedWords || this.bannedWords.length === 0) return;
-        const rawText = this.diaryText.value || '';
-        const text = rawText.toLowerCase();
-        let matched = null;
-        for (const w of this.bannedWords) {
-            if (!w) continue;
-            const idx = text.indexOf(w);
-            if (idx !== -1) {
-                // preserve original casing by slicing original text
-                matched = rawText.substring(idx, idx + w.length);
-                break;
-            }
+    async checkForBannedWords(forceSnippet = null) {
+        if (!this.diaryText) return;
+
+        const text = this.diaryText.value || '';
+        if (!text) {
+            this.hideAnnoyingOverlay();
+            return;
         }
-        if (matched) {
-            try { console.debug('Banned word matched:', matched); } catch {}
-            this.showAnnoyingOverlay(matched);
+
+        if (this._bannedCheckAbort) {
+            this._bannedCheckAbort.abort();
+        }
+
+        const controller = new AbortController();
+        this._bannedCheckAbort = controller;
+
+        try {
+            const res = await fetch('/api/banned-words/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: text }),
+                signal: controller.signal
+            });
+
+            if (!res.ok) {
+                console.warn('Banned check failed with status', res.status);
+                return;
+            }
+
+            const data = await res.json();
+            if (data.matched) {
+                const snippet = typeof data.snippet === 'string' && data.snippet.trim()
+                    ? data.snippet
+                    : 'Kata terlarang';
+                this.showAnnoyingOverlay(snippet);
+            } else {
+                this.hideAnnoyingOverlay();
+            }
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                return;
+            }
+            console.error('Error checking banned words:', err);
+        } finally {
+            if (this._bannedCheckAbort === controller) {
+                this._bannedCheckAbort = null;
+            }
         }
     }
 

@@ -1,4 +1,12 @@
 [
-  "rafi",
-  "bothealth"
+  {
+    "label": "Example literal word",
+    "pattern": "\\bexample\\b",
+    "flags": "iu"
+  },
+  {
+    "label": "Example leetspeak variations",
+    "pattern": "\\bx[0o]xx\\b",
+    "flags": "iu"
+  }
 ]

@@ -3,23 +3,118 @@
 Base URL: `http://127.0.0.1:5000`
 
 ## GET /
-- Renders the main HTML page.
+
+Renders `templates/index.html` with links to static assets.
 
 ## GET /api/today
-- Response: `{ "date": "YYYY-MM-DD", "content": "..." }`
+
+**Response**
+
+```json
+{
+	"date": "2025-09-27",
+	"content": "..."
+}
+```
+
+Returns today’s date and saved text (empty string if the file is missing).
 
 ## GET /api/entries
-- Response: `{ "entries": ["YYYY-MM-DD", ...] }`
+
+**Response**
+
+```json
+{
+	"entries": ["2025-09-27", "2025-09-26", "2025-09-20"]
+}
+```
+
+The entries array is sorted newest-first and mirrors filenames in `diary_entries/`.
 
 ## GET /api/entry/<date>
-- Path: `date` as `YYYY-MM-DD`
-- 200: `{ "date": "YYYY-MM-DD", "content": "..." }`
-- 404: `{ "error": "Entry not found" }`
+
+- Path parameter `date` must be `YYYY-MM-DD`.
+
+**200 Response**
+
+```json
+{
+	"date": "2025-09-20",
+	"content": "..."
+}
+```
+
+**404 Response**
+
+```json
+{
+	"error": "Entry not found"
+}
+```
 
 ## POST /api/save
-- Body JSON: `{ "date": "YYYY-MM-DD", "content": "..." }`
-- 200: `{ "success": true, "message": "Entry saved successfully" }`
+
+Saves an entry to `diary_entries/<date>.txt`.
+
+**Request body**
+
+```json
+{
+	"date": "2025-09-27",
+	"content": "Today I..."
+}
+```
+
+**Responses**
+
+- **200 OK** — `{ "success": true, "message": "Entry saved successfully" }`
+- **400 Bad Request** — `{ "error": "Date is required" }`
+- **500 Internal Server Error** — `{ "error": "..." }`
 
 ## GET /api/banned-words
-- Response: `{ "banned_words": ["word1", "word2", ...] }`
-- Source: `config/banned_words.json`
+
+Returns metadata only, keeping the actual regex rules private.
+
+```json
+{
+	"rule_count": 3,
+	"message": "Banned patterns are enforced server-side and not exposed."
+}
+```
+
+## POST /api/banned-words/check
+
+Checks submitted text against server-side regex patterns.
+
+**Request body**
+
+```json
+{
+	"content": "Some text"
+}
+```
+
+**Matched response**
+
+```json
+{
+	"matched": true,
+	"snippet": "goblok"
+}
+```
+
+**No match response**
+
+```json
+{
+	"matched": false
+}
+```
+
+**Invalid payload**
+
+```json
+{
+	"error": "content must be a string"
+}
+```
